@@ -1,0 +1,7 @@
+{
+  "name": "MK COLLECTION",
+  "description": "Premium Pakistani women's clothing brand e-commerce platform featuring ready-to-wear, embroidered, and custom wedding collections.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
