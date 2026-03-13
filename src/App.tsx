@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
@@ -11,8 +12,17 @@ import Cart from '@/pages/Cart';
 import Checkout from '@/pages/Checkout';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
+import AdminDashboard from '@/pages/AdminDashboard';
 import Contact from '@/pages/Contact';
 import TrackOrder from '@/pages/TrackOrder';
+import ShippingReturns from '@/pages/ShippingReturns';
+import TermsOfService from '@/pages/TermsOfService';
+import PaymentMethods from '@/pages/PaymentMethods';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import Sustainability from '@/pages/Sustainability';
+import About from '@/pages/About';
+import Wishlist from '@/pages/Wishlist';
+import { WishlistProvider } from '@/contexts/WishlistContext';
 
 const Success = () => (
   <div className="py-32 text-center max-w-xl mx-auto px-4">
@@ -25,38 +35,68 @@ const Success = () => (
   </div>
 );
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [pathname]);
+
+  return null;
+}
+
+function AppContent() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
+      <Helmet>
+        <title>MK COLLECTION | Premium Pakistani Women Clothing</title>
+        <meta name="description" content="Shop the latest collection of premium Pakistani women's clothing. Ready-to-wear, unstitched, and formal collections from MK COLLECTION." />
+        <meta property="og:title" content="MK COLLECTION | Premium Pakistani Women Clothing" />
+        <meta property="og:description" content="Shop the latest collection of premium Pakistani women's clothing." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://mkcollection.pk" />
+      </Helmet>
+      
+      {!isAdminRoute && <Header />}
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/success" element={<Success />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/track-order" element={<TrackOrder />} />
+          <Route path="/shipping" element={<ShippingReturns />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/payment" element={<PaymentMethods />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/sustainability" element={<Sustainability />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/auth/*" element={<Auth />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/dashboard/*" element={<Dashboard />} />
+        </Routes>
+      </main>
+      {!isAdminRoute && <Footer />}
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <HelmetProvider>
       <AuthProvider>
         <CartProvider>
-          <div className="flex flex-col min-h-screen">
-            <Helmet>
-              <title>MK COLLECTION | Premium Pakistani Women Clothing</title>
-              <meta name="description" content="Shop the latest collection of premium Pakistani women's clothing. Ready-to-wear, unstitched, and formal collections from MK COLLECTION." />
-              <meta property="og:title" content="MK COLLECTION | Premium Pakistani Women Clothing" />
-              <meta property="og:description" content="Shop the latest collection of premium Pakistani women's clothing." />
-              <meta property="og:type" content="website" />
-              <link rel="canonical" href="https://mkcollection.pk" />
-            </Helmet>
-            
-            <Header />
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/product/:slug" element={<ProductDetail />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/checkout/success" element={<Success />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/track-order" element={<TrackOrder />} />
-                <Route path="/auth/*" element={<Auth />} />
-                <Route path="/dashboard/*" element={<Dashboard />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+          <WishlistProvider>
+            <AppContent />
+          </WishlistProvider>
         </CartProvider>
       </AuthProvider>
     </HelmetProvider>

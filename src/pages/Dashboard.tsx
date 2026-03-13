@@ -1,19 +1,47 @@
 import { useAuth } from '@/contexts/AuthContext';
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
 import { LayoutDashboard, ShoppingBag, Heart, User, Settings, LogOut, Package, Users, FileText, HelpCircle, Plus, Edit, Trash2 } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/types';
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        navigate('/auth/login');
+      } else if (user.role === 'admin') {
+        // Redirect admins to admin dashboard
+        navigate('/admin');
+      }
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-brand-gold mx-auto mb-4"></div>
+          <p className="text-sm text-gray-500 uppercase tracking-widest font-bold">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
-    navigate('/auth/login');
     return null;
   }
+
+  if (user.role === 'admin') {
+    return null; // Will redirect
+  }
+
+  const displayName = user.name?.trim() || user.email?.split('@')[0] || 'User';
 
   const handleSignOut = async () => {
     await signOut();
@@ -21,14 +49,13 @@ export default function Dashboard() {
   };
 
   const sidebarLinks = [
-    { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['customer', 'staff', 'admin'] },
+    { name: 'Overview', href: '/dashboard', icon: LayoutDashboard, roles: ['customer', 'staff'] },
     { name: 'My Orders', href: '/dashboard/orders', icon: ShoppingBag, roles: ['customer'] },
-    { name: 'Manage Orders', href: '/dashboard/manage-orders', icon: Package, roles: ['staff', 'admin'] },
-    { name: 'Products', href: '/dashboard/products', icon: Package, roles: ['staff', 'admin'] },
-    { name: 'Users', href: '/dashboard/users', icon: Users, roles: ['admin'] },
-    { name: 'Blogs', href: '/dashboard/blogs', icon: FileText, roles: ['admin'] },
-    { name: 'FAQs', href: '/dashboard/faqs', icon: HelpCircle, roles: ['admin'] },
-    { name: 'Profile', href: '/dashboard/profile', icon: User, roles: ['customer', 'staff', 'admin'] },
+    { name: 'Manage Orders', href: '/dashboard/manage-orders', icon: Package, roles: ['staff'] },
+    { name: 'Products', href: '/dashboard/products', icon: Package, roles: ['staff'] },
+    { name: 'Wishlist', href: '/dashboard/wishlist', icon: Heart, roles: ['customer'] },
+    { name: 'Profile', href: '/dashboard/profile', icon: User, roles: ['customer', 'staff'] },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings, roles: ['customer', 'staff'] },
   ];
 
   const filteredLinks = sidebarLinks.filter(link => link.roles.includes(user.role));
@@ -38,7 +65,7 @@ export default function Dashboard() {
       {/* Sidebar */}
       <aside className="w-full md:w-64 space-y-8">
         <div className="pb-8 border-b border-brand-muted">
-          <h2 className="text-xl font-display mb-1">{user.name}</h2>
+          <h2 className="text-xl font-display mb-1">{displayName}</h2>
           <p className="text-[10px] uppercase tracking-widest text-brand-gray font-bold">{user.role} Account</p>
         </div>
         
@@ -66,10 +93,14 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="flex-grow">
         <Routes>
-          <Route path="/" element={<Overview user={user} />} />
-          <Route path="/orders" element={<div className="py-20 text-center text-brand-gray uppercase tracking-widest text-sm">Order History Coming Soon</div>} />
-          <Route path="/products" element={<ManageProducts />} />
-          <Route path="/profile" element={<div className="py-20 text-center text-brand-gray uppercase tracking-widest text-sm">Profile Settings Coming Soon</div>} />
+          <Route index element={<Overview user={user} />} />
+          <Route path="orders" element={<div className="py-20 text-center text-brand-gray uppercase tracking-widest text-sm">Order History Coming Soon</div>} />
+          <Route path="manage-orders" element={<div className="py-20 text-center text-brand-gray uppercase tracking-widest text-sm">Manage Orders Coming Soon</div>} />
+          <Route path="products" element={<ManageProducts />} />
+          <Route path="wishlist" element={<div className="py-20 text-center text-brand-gray uppercase tracking-widest text-sm">Wishlist Coming Soon</div>} />
+          <Route path="profile" element={<div className="py-20 text-center text-brand-gray uppercase tracking-widest text-sm">Profile Settings Coming Soon</div>} />
+          <Route path="settings" element={<div className="py-20 text-center text-brand-gray uppercase tracking-widest text-sm">Account Settings Coming Soon</div>} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
     </div>
@@ -141,44 +172,11 @@ function ManageProducts() {
 }
 
 function Overview({ user }: { user: any }) {
-  const [seeding, setSeeding] = useState(false);
-  const [seedResult, setSeedResult] = useState<string | null>(null);
-
-  const handleSeed = async () => {
-    setSeeding(true);
-    try {
-      const { seedDatabase } = await import('@/lib/seedData');
-      const result = await seedDatabase();
-      setSeedResult(result.success ? 'Database seeded successfully!' : 'Error seeding database. Check console.');
-    } catch (err) {
-      setSeedResult('Failed to load seed script.');
-    }
-    setSeeding(false);
-  };
-
   return (
     <div className="space-y-12">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-display">Welcome back, {user.name}</h2>
-        {user.role === 'admin' && (
-          <button 
-            onClick={handleSeed}
-            disabled={seeding}
-            className="btn-outline py-2 px-4 text-[10px]"
-          >
-            {seeding ? 'Seeding...' : 'Seed Sample Data'}
-          </button>
-        )}
       </div>
-      
-      {seedResult && (
-        <div className={cn(
-          "p-4 text-xs uppercase tracking-widest font-bold",
-          seedResult.includes('successfully') ? "bg-state-success/10 text-state-success" : "bg-state-error/10 text-state-error"
-        )}>
-          {seedResult}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-brand-muted p-8 border border-brand-muted rounded-2xl">

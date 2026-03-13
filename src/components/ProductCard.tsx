@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Eye, X, ArrowRight, Maximize2 } from 'lucide-react';
 import { Product } from '@/types';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -14,7 +14,9 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist();
   const [showQuickView, setShowQuickView] = useState(false);
+  const inWishlist = isInWishlist(product.id);
 
   return (
     <>
@@ -66,10 +68,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                   className="text-brand-gray hover:text-brand-gold transition-colors"
                   onClick={(e) => {
                     e.preventDefault();
-                    // Wishlist logic would go here
+                    if (inWishlist) {
+                      removeFromWishlist(product.id);
+                    } else {
+                      addToWishlist(product);
+                    }
                   }}
                 >
-                  <Heart size={18} strokeWidth={1.5} />
+                  <Heart size={18} strokeWidth={1.5} fill={inWishlist ? "currentColor" : "none"} />
                 </button>
               </div>
             </div>

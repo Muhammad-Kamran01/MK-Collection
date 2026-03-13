@@ -20,7 +20,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-brand-muted">
-      <div className="bg-header-promo text-brand-dark text-[10px] py-1.5 text-center uppercase tracking-[0.2em]">
+      <div className="bg-[#1B1B1B] text-white text-[10px] py-1.5 text-center uppercase tracking-[0.2em] font-medium">
         Enjoy Free Shipping On All Orders
       </div>
       
@@ -35,8 +35,12 @@ export default function Header() {
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-brand-gold rounded-full flex items-center justify-center text-white">
-                <span className="font-display text-lg">MK</span>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white">
+                <img
+                  src="/logo.png"
+                  alt="MK Collection Logo"
+                  className="w-10 h-10 rounded-xl object-cover ring-1 ring-brand-dark/10"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="text-xl sm:text-2xl font-display tracking-tighter text-brand-dark leading-none">MK COLLECTION</span>

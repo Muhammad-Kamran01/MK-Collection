@@ -18,6 +18,14 @@ export interface Product {
   title: string;
   slug: string;
   description: string;
+  fitting_details?: string;
+  fabric_and_care?: string;
+  product_details?: string;
+  shipping_and_return?: string;
+  material_title?: string;
+  material_description?: string;
+  material_tags?: string[];
+  size_chart?: string;
   price: number;
   discount_price?: number;
   category: string;
@@ -43,14 +51,15 @@ export interface Category {
 
 export interface Order {
   id: string;
-  user_id: string;
+  user_id?: string | null;
   order_number: string;
-  items: OrderItem[];
+  items?: OrderItem[];
   total_amount: number;
   shipping_fee: number;
   payment_status: 'pending' | 'paid' | 'failed';
   order_status: 'processing' | 'shipped' | 'delivered' | 'cancelled';
   tracking_number?: string;
+  shipping_address?: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -83,3 +92,17 @@ export interface Review {
   created_at: string;
   user?: { name: string };
 }
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject?: string;
+  phone?: string | null;
+  status?: ContactMessageStatus | null;
+  message: string;
+  deleted_at?: string | null;
+  created_at: string;
+}
+
+export type ContactMessageStatus = 'viewed' | 'in_progress' | 'responded' | 'completed';
